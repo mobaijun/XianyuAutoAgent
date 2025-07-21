@@ -8,9 +8,9 @@ from datetime import datetime
 # 邮件配置（可从环境变量读取）
 SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.163.com')
 SMTP_PORT = int(os.getenv('SMTP_PORT', '465'))
-EMAIL_USER = os.getenv('EMAIL_USER', 'mobaijun8@163.com')
-EMAIL_PASS = os.getenv('EMAIL_PASS', 'QMTOYLDQFTXEGKUN')
-TO_EMAIL = 'mobaijun8@163.com'
+EMAIL_USER = os.getenv('EMAIL_USER', '*********@163.com')
+EMAIL_PASS = os.getenv('EMAIL_PASS', '************')
+TO_EMAIL = '**********@163.com'
 
 MAIL_SUBJECT = '【闲鱼AI客服】有新顾客消息 - {user_name} 咨询了商品！'
 
