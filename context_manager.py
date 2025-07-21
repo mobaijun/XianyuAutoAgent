@@ -307,3 +307,33 @@ class ChatContextManager:
             return 0
         finally:
             conn.close() 
+
+    def should_push_email(self, chat_id, user_id):
+        """
+        只在首次用户发消息且还没有owner消息时推送。
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        try:
+            # 统计该用户user消息数量
+            cursor.execute(
+                "SELECT COUNT(*) FROM messages WHERE chat_id=? AND user_id=? AND role='user'",
+                (chat_id, user_id)
+            )
+            user_msg_count = cursor.fetchone()[0]
+            if user_msg_count != 0:
+                return False
+            # 是否有assistant消息
+            cursor.execute(
+                "SELECT COUNT(*) FROM messages WHERE chat_id=? AND role='assistant'",
+                (chat_id,)
+            )
+            owner_msg_count = cursor.fetchone()[0]
+            if owner_msg_count > 0:
+                return False
+            return True
+        except Exception as e:
+            logger.error(f"判断是否推送邮件时出错: {e}")
+            return False
+        finally:
+            conn.close() 

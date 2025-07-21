@@ -13,6 +13,7 @@ import sys
 from utils.xianyu_utils import generate_mid, generate_uuid, trans_cookies, generate_device_id, decrypt
 from XianyuAgent import XianyuReplyBot
 from context_manager import ChatContextManager
+from utils.email_utils import send_customer_message_email
 
 
 class XianyuLive:
@@ -380,6 +381,36 @@ class XianyuLive:
             if not item_id:
                 logger.warning("无法获取商品ID")
                 return
+
+            # 邮件推送（只要是用户发来的聊天消息就推送）
+            # 获取商品信息
+            item_info = self.context_manager.get_item_info(item_id)
+            if not item_info:
+                logger.info(f"从API获取商品信息: {item_id}")
+                api_result = self.xianyu.get_item_info(item_id)
+                if 'data' in api_result and 'itemDO' in api_result['data']:
+                    item_info = api_result['data']['itemDO']
+                    self.context_manager.save_item_info(item_id, item_info)
+                else:
+                    logger.warning(f"获取商品信息失败: {api_result}")
+                    item_info = {'title': '未知', 'desc': '', 'soldPrice': '未知'}
+            item_title = item_info.get('title', '未知')
+            item_desc = item_info.get('desc', '')
+            item_price = item_info.get('soldPrice', '未知')
+            item_url = f'https://goofish.com/item?id={item_id}'
+            msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time/1000))
+            # 只推送一次，且店主回复后不再推送
+            if self.context_manager.should_push_email(chat_id, send_user_id):
+                logger.info(f"首次推送邮件提醒: chat_id={chat_id}, user_id={send_user_id}, 商品={item_title}")
+                send_customer_message_email(
+                    user_name=send_user_name,
+                    item_title=item_title,
+                    item_url=item_url,
+                    item_desc=item_desc,
+                    item_price=item_price,
+                    user_message=send_message,
+                    msg_time=msg_time
+                )
 
             # 检查是否为卖家（自己）发送的控制命令
             if send_user_id == self.myid:

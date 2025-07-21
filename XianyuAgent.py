@@ -71,18 +71,15 @@ class XianyuReplyBot:
     def generate_reply(self, user_msg: str, item_desc: str, context: List[Dict]) -> str:
         """生成回复主流程"""
         # 记录用户消息
-        # logger.debug(f'用户所发消息: {user_msg}')
+        logger.debug(f'用户所发消息: {user_msg}')
         
         formatted_context = self.format_history(context)
-        # logger.debug(f'对话历史: {formatted_context}')
+        logger.debug(f'对话历史: {formatted_context}')
         
         # 1. 路由决策
         detected_intent = self.router.detect(user_msg, item_desc, formatted_context)
 
-
-
         # 2. 获取对应Agent
-
         internal_intents = {'classify'}  # 定义不对外开放的Agent
 
         if detected_intent in self.agents and detected_intent not in internal_intents:
@@ -264,12 +261,6 @@ class TechAgent(BaseAgent):
         )
 
         return self.safety_filter(response.choices[0].message.content)
-
-
-    # def _fetch_tech_specs(self) -> str:
-    #     """模拟获取技术参数（可连接数据库）"""
-    #     return "功率：200W@8Ω\n接口：XLR+RCA\n频响：20Hz-20kHz"
-
 
 class ClassifyAgent(BaseAgent):
     """意图识别Agent"""
